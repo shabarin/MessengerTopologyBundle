@@ -1,0 +1,12 @@
+framework:
+    messenger:
+        default_bus: event.bus
+        routing:
+            'Shabarin\MessengerTopologyBundle\Tests\Fixtures\EventMap\Message\Alpha\ThingHappenedEvent': async
+
+when@test:
+    framework:
+        messenger:
+            routing:
+                'Shabarin\MessengerTopologyBundle\Tests\Fixtures\EventMap\Message\Alpha\ThingHappenedEvent': sync
+                'Shabarin\MessengerTopologyBundle\Tests\Fixtures\EventMap\CommandMessage\Beta\DoThing': [async, async_notifications]

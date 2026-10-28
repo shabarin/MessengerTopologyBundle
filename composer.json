@@ -1,0 +1,44 @@
+{
+    "name": "shabarin/messenger-topology-bundle",
+    "description": "Map of Symfony Messenger messages generated from code: publishers, handlers and transports as Markdown + Mermaid, a JSON snapshot, and a structural diff with highlighted diagrams.",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "keywords": [
+        "symfony",
+        "messenger",
+        "architecture",
+        "mermaid",
+        "documentation"
+    ],
+    "homepage": "https://github.com/shabarin/MessengerTopologyBundle",
+    "authors": [
+        {
+            "name": "Ivan Shabarin"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "symfony/config": "^7.0",
+        "symfony/console": "^7.0",
+        "symfony/dependency-injection": "^7.0",
+        "symfony/http-kernel": "^7.0",
+        "symfony/messenger": "^7.0",
+        "symfony/yaml": "^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Shabarin\\MessengerTopologyBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Shabarin\\MessengerTopologyBundle\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

@@ -1,5 +1,7 @@
 # MessengerTopologyBundle
 
+![Code changes in a merge request turned into a Messenger topology diff: added messages and handlers in green, removed ones as red ghosts, a transport change in amber](docs/topology-diff.png)
+
 A map of Symfony Messenger messages generated from the code: who publishes (`new <Message>`), who handles
 (`#[AsMessageHandler]`), which transport carries each message (`messenger.yaml`). No container boot and no
 running application: sources are parsed with `PhpToken`, attributes are read through reflection.

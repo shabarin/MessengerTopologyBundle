@@ -1,0 +1,269 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  :root {
+    --ink: #1f2328;
+    --muted: #59636e;
+    --line: #d1d9e0;
+    --mono: "SF Mono", "JetBrains Mono", Menlo, monospace;
+    --sans: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1600px; height: 860px; overflow: hidden; font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+  body {
+    position: relative;
+    font-family: var(--sans);
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 600px at 85% 20%, #e9eefc 0%, transparent 60%),
+      radial-gradient(900px 600px at 0% 100%, #eef6f0 0%, transparent 55%),
+      #f7f8fa;
+  }
+
+  .header { position: absolute; left: 48px; top: 40px; right: 48px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font: 600 13px/1 var(--mono); color: #3b4a6b;
+    background: #fff; border: 1px solid #d8deea; border-radius: 999px; padding: 7px 12px;
+  }
+  .badge i { width: 8px; height: 8px; border-radius: 50%; background: #1e8e3e; display: block; }
+  h1 { margin-top: 16px; font-size: 36px; line-height: 1.1; letter-spacing: -0.02em; font-weight: 750; }
+  h1 em { font-style: normal; background: linear-gradient(90deg, #1e8e3e, #2563eb 55%, #c5221f); -webkit-background-clip: text; color: transparent; }
+
+  .caption {
+    position: absolute; top: 150px;
+    font: 700 12px/1 var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: #6b7686;
+  }
+
+  /* ---- left: code diffs ---- */
+  .diffs { position: absolute; left: 48px; top: 174px; width: 600px; display: flex; flex-direction: column; gap: 12px; }
+  .card {
+    background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(31,35,40,.06), 0 8px 24px rgba(31,35,40,.06);
+  }
+  .file {
+    display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 12px;
+    background: #f6f8fa; border-bottom: 1px solid var(--line);
+    font: 12.5px/1 var(--mono); color: var(--ink);
+  }
+  .file:last-child { border-bottom: 0; }
+  .file .tag { margin-left: auto; font: 700 10.5px/1 var(--sans); letter-spacing: .06em; padding: 4px 7px; border-radius: 5px; }
+  .tag.new { color: #1a7f37; background: #dafbe1; }
+  .tag.mod { color: #9a6700; background: #fff8c5; }
+  .tag.del { color: #cf222e; background: #ffebe9; }
+  .file .dir { color: var(--muted); }
+  pre { font: 12.5px/21px var(--mono); padding: 6px 0; }
+  pre span.l { display: block; padding: 0 12px 0 0; white-space: pre; }
+  pre span.l::before { display: inline-block; width: 30px; text-align: center; color: #8c959f; }
+  .l.add { background: #e6ffec; } .l.add::before { content: "+"; color: #1a7f37; background: #ccffd8; }
+  .l.del { background: #ffebe9; } .l.del::before { content: "−"; color: #cf222e; background: #ffd7d5; }
+  .l.ctx::before { content: " "; }
+  .l.hunk { color: #59636e; background: #ddf4ff; } .l.hunk::before { content: "@@"; color: #0969da; font-size: 11px; }
+  .k { color: #cf222e; } .t { color: #953800; } .f { color: #8250df; } .v { color: #0550ae; } .a { color: #116329; } .c { color: #6e7781; }
+
+  /* ---- right: report ---- */
+  .panel {
+    position: absolute; left: 790px; top: 174px; width: 762px;
+    background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+    box-shadow: 0 2px 4px rgba(31,35,40,.05), 0 24px 48px rgba(40,52,90,.12);
+  }
+  .term {
+    display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 16px;
+    background: #1b1f27; color: #d7dde8; font: 12.5px/1 var(--mono);
+  }
+  .dots { display: flex; gap: 6px; } .dots i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+  .term .p { color: #7ee2a8; } .term .o { color: #9fb3d9; }
+  .report { padding: 16px 20px 14px; }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+    background: linear-gradient(135deg, #2563eb, #1e8e3e); color: #fff; font: 700 14px/1 var(--sans);
+  }
+  .who b { font-size: 16px; } .who span { color: var(--muted); font-size: 13.5px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip { font: 600 12.5px/1 var(--mono); padding: 7px 10px; border-radius: 7px; border: 1.5px solid; }
+  .chip.added { color: #0b3d1a; background: #e6f4ea; border-color: #1e8e3e; }
+  .chip.removed { color: #5c1a17; background: #fdecea; border-color: #c5221f; border-style: dashed; }
+  .chip.changed { color: #5a2d00; background: #fff4e5; border-color: #e8710a; }
+  svg.diagram { display: block; margin-top: 10px; }
+  .legend {
+    display: flex; flex-wrap: nowrap; gap: 6px 13px; align-items: center; white-space: nowrap;
+    margin-top: 6px; padding-top: 12px; border-top: 1px solid #eef0f3;
+    font-size: 12px; color: var(--muted);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .sw { width: 16px; height: 12px; border-radius: 3px; border: 1.5px solid; display: inline-block; }
+
+  svg.flow { position: absolute; left: 0; top: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="badge"><i></i>MessengerTopologyBundle</div>
+  <h1>Your merge request, as a <em>Messenger topology diff</em></h1>
+</div>
+
+<div class="caption" style="left:48px">The code you changed</div>
+<div class="caption" style="left:790px">What the reviewer sees</div>
+
+<div class="diffs" id="diffs">
+  <div class="card">
+    <div class="file"><span><span class="dir">src/Message/Booking/</span>BookingConfirmed.php</span><span class="tag new">NEW</span></div>
+    <pre><span class="l add"><span class="k">final readonly class</span> <span class="t">BookingConfirmed</span></span><span class="l add">{</span><span class="l add">    <span class="k">public function</span> <span class="f">__construct</span>(<span class="k">public int</span> <span class="v">$bookingId</span>) {}</span><span class="l add">}</span></pre>
+  </div>
+
+  <div class="card">
+    <div class="file"><span><span class="dir">src/Service/Booking/</span>BookingService.php</span><span class="tag mod">MODIFIED</span></div>
+    <pre><span class="l hunk"> <span class="k">public function</span> <span class="f">confirm</span>(<span class="t">Booking</span> <span class="v">$booking</span>): <span class="k">void</span></span><span class="l ctx">    <span class="v">$booking</span>-&zwnj;&gt;<span class="f">confirm</span>();</span><span class="l del">    <span class="v">$this</span>-&zwnj;&gt;bus-&zwnj;&gt;<span class="f">dispatch</span>(<span class="k">new</span> <span class="t">SendConfirmationSms</span>(<span class="v">$booking</span>-&zwnj;&gt;id));</span><span class="l add">    <span class="v">$this</span>-&zwnj;&gt;bus-&zwnj;&gt;<span class="f">dispatch</span>(<span class="k">new</span> <span class="t">BookingConfirmed</span>(<span class="v">$booking</span>-&zwnj;&gt;id));</span></pre>
+  </div>
+
+  <div class="card">
+    <div class="file"><span><span class="dir">src/MessageHandler/Billing/</span>CaptureDepositHandler.php</span><span class="tag new">NEW</span></div>
+    <pre><span class="l add"><span class="a">#[AsMessageHandler]</span></span><span class="l add"><span class="k">final class</span> <span class="t">CaptureDepositHandler</span></span><span class="l add">{</span><span class="l add">    <span class="k">public function</span> <span class="f">__invoke</span>(<span class="t">BookingConfirmed</span> <span class="v">$event</span>): <span class="k">void</span> { <span class="c">/* … */</span> }</span><span class="l add">}</span></pre>
+  </div>
+
+  <div class="card">
+    <div class="file"><span><span class="dir">src/CommandMessage/Notification/</span>SendConfirmationSms.php</span><span class="tag del">DELETED</span></div>
+    <div class="file"><span><span class="dir">src/MessageHandler/Notification/</span>SendSmsHandler.php</span><span class="tag del">DELETED</span></div>
+  </div>
+
+  <div class="card">
+    <div class="file"><span><span class="dir">config/packages/</span>messenger.yaml</span><span class="tag mod">MODIFIED</span></div>
+    <pre><span class="l ctx">  <span class="t">routing</span>:</span><span class="l del">    App\Message\Billing\PayoutRequested: <span class="v">sync</span></span><span class="l add">    App\Message\Billing\PayoutRequested: <span class="v">async</span></span></pre>
+  </div>
+</div>
+
+<div class="panel" id="panel">
+  <div class="term">
+    <div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+    <span><span class="p">$</span> bin/console messenger-topology:diff <span class="o">--base=- --base-label="main (a1b2c3d)"</span></span>
+  </div>
+  <div class="report">
+    <div class="who"><div class="avatar">⇄</div><b>Message map changes</b><span>compared to main (a1b2c3d)</span></div>
+    <div class="chips">
+      <span class="chip added">+ BookingConfirmed</span>
+      <span class="chip removed">− SendConfirmationSms</span>
+      <span class="chip changed">PayoutRequested: sync → async</span>
+    </div>
+
+    <svg class="diagram" width="722" height="410" viewBox="0 0 722 410" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif">
+      <defs>
+        <marker id="m-add" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1e8e3e"/></marker>
+        <marker id="m-rem" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c5221f"/></marker>
+        <marker id="m-unc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a9afb8"/></marker>
+      </defs>
+
+      <!-- column hints -->
+      <g font-size="10.5" font-weight="700" letter-spacing="1.2" fill="#9aa3ae">
+        <text x="96" y="12" text-anchor="middle">PUBLISHERS</text>
+        <text x="361" y="12" text-anchor="middle">MESSAGES</text>
+        <text x="626" y="12" text-anchor="middle">HANDLERS</text>
+      </g>
+
+      <!-- edges -->
+      <g fill="none">
+        <path d="M184,104 C222,104 222,62 258,62" stroke="#1e8e3e" stroke-width="2.2" marker-end="url(#m-add)"/>
+        <path d="M466,62 L532,62" stroke="#1e8e3e" stroke-width="2.2" marker-end="url(#m-add)"/>
+        <path d="M184,104 C222,104 222,154 262,154" stroke="#c5221f" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#m-rem)"/>
+        <path d="M460,154 L532,154" stroke="#c5221f" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#m-rem)"/>
+        <path d="M184,262 L258,262" stroke="#a9afb8" stroke-width="1.6" marker-end="url(#m-unc)"/>
+        <path d="M466,262 L532,262" stroke="#a9afb8" stroke-width="1.6" marker-end="url(#m-unc)"/>
+        <path d="M184,362 L258,362" stroke="#a9afb8" stroke-width="1.6" stroke-dasharray="2 4" stroke-linecap="round" marker-end="url(#m-unc)"/>
+        <path d="M466,362 L532,362" stroke="#a9afb8" stroke-width="1.6" stroke-dasharray="2 4" stroke-linecap="round" marker-end="url(#m-unc)"/>
+      </g>
+
+      <!-- publishers -->
+      <g>
+        <rect x="8" y="79" width="176" height="50" rx="8" fill="#f4f4f4" stroke="#bbb" stroke-width="1.5"/>
+        <text x="96" y="99" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1" fill="#9aa3ae">BOOKING</text>
+        <text x="96" y="117" text-anchor="middle" font-size="13.5" font-weight="600" fill="#6b7280">BookingService</text>
+
+        <rect x="8" y="237" width="176" height="50" rx="8" fill="#f4f4f4" stroke="#bbb" stroke-width="1.5"/>
+        <text x="96" y="257" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1" fill="#9aa3ae">BILLING</text>
+        <text x="96" y="275" text-anchor="middle" font-size="13.5" font-weight="600" fill="#6b7280">PayoutScheduler</text>
+
+        <rect x="8" y="337" width="176" height="50" rx="8" fill="#f4f4f4" stroke="#bbb" stroke-width="1.5"/>
+        <text x="96" y="357" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1" fill="#9aa3ae">GUEST</text>
+        <text x="96" y="375" text-anchor="middle" font-size="13.5" font-weight="600" fill="#6b7280">GuestService</text>
+      </g>
+
+      <!-- messages: event = hexagon, command = stadium -->
+      <g>
+        <path d="M274,37 L448,37 L466,62 L448,87 L274,87 L256,62 Z" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="2.2"/>
+        <text x="361" y="57" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1" fill="#1e8e3e">BOOKING · EVENT</text>
+        <text x="361" y="75" text-anchor="middle" font-size="14" font-weight="700" fill="#0b3d1a">BookingConfirmed</text>
+
+        <rect x="262" y="129" width="198" height="50" rx="25" fill="#fdecea" stroke="#c5221f" stroke-width="2" stroke-dasharray="5 4"/>
+        <text x="361" y="149" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1" fill="#c5221f" opacity=".85">NOTIFICATION · COMMAND</text>
+        <text x="361" y="167" text-anchor="middle" font-size="14" font-weight="700" fill="#5c1a17" opacity=".85">SendConfirmationSms</text>
+
+        <path d="M274,230 L448,230 L466,262 L448,294 L274,294 L256,262 Z" fill="#fff4e5" stroke="#e8710a" stroke-width="2.2"/>
+        <text x="361" y="249" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1" fill="#c25e06">BILLING · EVENT</text>
+        <text x="361" y="266" text-anchor="middle" font-size="14" font-weight="700" fill="#5a2d00">PayoutRequested</text>
+        <text x="361" y="284" text-anchor="middle" font-size="12" font-weight="600" fill="#c25e06">sync → async</text>
+
+        <path d="M274,337 L448,337 L466,362 L448,387 L274,387 L256,362 Z" fill="#f4f4f4" stroke="#bbb" stroke-width="1.5"/>
+        <text x="361" y="357" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1" fill="#9aa3ae">GUEST · EVENT</text>
+        <text x="361" y="375" text-anchor="middle" font-size="14" font-weight="600" fill="#6b7280">GuestRegistered</text>
+      </g>
+
+      <!-- handlers -->
+      <g>
+        <rect x="538" y="37" width="176" height="50" rx="8" fill="#e6f4ea" stroke="#1e8e3e" stroke-width="2.2"/>
+        <text x="626" y="57" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1" fill="#1e8e3e">BILLING</text>
+        <text x="626" y="75" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0b3d1a">CaptureDepositHandler</text>
+
+        <rect x="538" y="129" width="176" height="50" rx="8" fill="#fdecea" stroke="#c5221f" stroke-width="2" stroke-dasharray="5 4"/>
+        <text x="626" y="149" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1" fill="#c5221f" opacity=".85">NOTIFICATION</text>
+        <text x="626" y="167" text-anchor="middle" font-size="13.5" font-weight="700" fill="#5c1a17" opacity=".85">SendSmsHandler</text>
+
+        <rect x="538" y="237" width="176" height="50" rx="8" fill="#f4f4f4" stroke="#bbb" stroke-width="1.5"/>
+        <text x="626" y="257" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1" fill="#9aa3ae">BILLING</text>
+        <text x="626" y="275" text-anchor="middle" font-size="13.5" font-weight="600" fill="#6b7280">PayoutHandler</text>
+
+        <rect x="538" y="337" width="176" height="50" rx="8" fill="#f4f4f4" stroke="#bbb" stroke-width="1.5"/>
+        <text x="626" y="357" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1" fill="#9aa3ae">NOTIFICATION</text>
+        <text x="626" y="375" text-anchor="middle" font-size="13.5" font-weight="600" fill="#6b7280">WelcomeEmailHandler</text>
+      </g>
+    </svg>
+
+    <div class="legend">
+      <span><i class="sw" style="background:#e6f4ea;border-color:#1e8e3e"></i>added</span>
+      <span><i class="sw" style="background:#fdecea;border-color:#c5221f;border-style:dashed"></i>removed (ghost)</span>
+      <span><i class="sw" style="background:#fff4e5;border-color:#e8710a"></i>transport changed</span>
+      <span><i class="sw" style="background:#f4f4f4;border-color:#bbb"></i>unchanged</span>
+      <span style="margin-left:auto"><svg width="22" height="14"><path d="M5,1 L17,1 L21,7 L17,13 L5,13 L1,7 Z" fill="none" stroke="#8c959f" stroke-width="1.4"/></svg>event</span>
+      <span><svg width="22" height="14"><rect x="1" y="1" width="20" height="12" rx="6" fill="none" stroke="#8c959f" stroke-width="1.4"/></svg>command</span>
+      <span><svg width="24" height="8"><path d="M0,4 L24,4" stroke="#8c959f" stroke-width="1.6"/></svg>async</span>
+      <span><svg width="24" height="8"><path d="M1,4 L23,4" stroke="#8c959f" stroke-width="1.6" stroke-dasharray="2 4" stroke-linecap="round"/></svg>sync</span>
+    </div>
+  </div>
+</div>
+
+<svg class="flow" id="flow" width="1600" height="860"></svg>
+
+<script>
+  // Funnel: a curve from every diff card into one arrow that enters the report panel.
+  const flow = document.getElementById('flow');
+  const panel = document.getElementById('panel').getBoundingClientRect();
+  const cards = [...document.querySelectorAll('#diffs .card')].map(c => c.getBoundingClientRect());
+  const joinX = 738, joinY = panel.top + panel.height / 2;
+  const ns = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs) => { const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); flow.appendChild(e); return e; };
+  const defs = el('defs', {});
+  defs.innerHTML = `
+    <linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#9aa6bd" stop-opacity=".35"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+    <marker id="head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>`;
+  for (const c of cards) {
+    const y = c.top + c.height / 2;
+    el('circle', { cx: c.right, cy: y, r: 3.5, fill: '#9aa6bd' });
+    el('path', { d: `M${c.right},${y} C${c.right + 50},${y} ${joinX - 50},${joinY} ${joinX},${joinY}`, fill: 'none', stroke: 'url(#g)', 'stroke-width': 2 });
+  }
+  el('path', { d: `M${joinX},${joinY} L${panel.left - 8},${joinY}`, stroke: '#2563eb', 'stroke-width': 3.5, 'marker-end': 'url(#head)', fill: 'none' });
+  el('circle', { cx: joinX, cy: joinY, r: 5, fill: '#2563eb' });
+</script>
+</body>
+</html>
